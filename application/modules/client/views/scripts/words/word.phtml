@@ -1,0 +1,19 @@
+<h3>Перевод слова "<?php echo $this->escape($this -> word['word']); ?>" [<a href="<?php echo $this -> url(array('controller' => 'words', 'action' => 'add', 'word' => $this->word['id']), null, true);?>">редактировать</a>]</h3>
+<?php if ( !empty($this->transcription) ): ?>
+<?php if ( isset($this->transcription['url']) ): ?>
+Транскрипция: <img src="<?php echo $this->transcription['url'];?>" />
+<?php else: ?>
+Транскрипция: <?php echo $this->transcription['text'];?>
+<?php endif;?><br/>
+<?php endif; ?>
+<?php if ( !empty($this->speech) ): ?>
+Произношение слова: <a class="play" href="<?php echo $this->speech['url'];?>">Прослушать</a><br/>
+<?php endif; ?>
+<?php if ( !empty($this->translates) ): ?>
+<h3>Перевод</h3>
+<table>
+<?php foreach ( $this->translates as $translate): ?>
+<tr><td><?php echo $this->escape($translate['translate']); ?></td><td><a href="<?php echo $this->url(array('controller' => 'words', 'action' => 'delete', 'id' => $translate['id'], 'type' => 'translate'), null, true)?>" class="delete-link" title="Удалить перевод"><img src="<?php echo $this->baseUrl('images/delete-key.png');?>" alt="Удалить перевод"/></a></td></tr>
+<?php endforeach; ?>
+</table>
+<?php endif; ?>

@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8" />
+<title>Я хочу говорить</title>
+<link rel="stylesheet" type="text/css" href="<?= $this -> baseUrl('style.css'); ?>" />
+<?=$this -> headLink();?>
+<script src="<?= $this -> baseUrl('js/jquery-1.5.2.min.js'); ?>" type="text/javascript"></script>
+<script src="<?= $this -> baseUrl('js/animator.js'); ?>" type="text/javascript"></script>
+<script src="<?= $this -> baseUrl('js/default.js'); ?>" type="text/javascript"></script>
+<?=$this -> headScript();?>
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-25897714-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+</head>
+<body>
+
+<div id="container">
+	
+	<!-- ### Header ### -->
+	
+	<div id="header">
+	<?php if ( !empty($this -> user) && $this -> user -> isAuthenticated() && !empty($this->user->name) ): ?>
+	<p class="exit-block">Пользователь: <strong><?php echo $this->escape($this->user->name); ?></strong> (<a href="<?php echo $this -> url(array('controller' => 'user', 'action' => 'logout'), null, true)?>">Выход</a>)</p>
+	<?php endif; ?>	
+		<h1><a href="<?php echo !empty($this->user->name) ? $this->url(array('controller' => 'words', 'action' => 'index'), null , true) : $this->url(array('controller' => 'index', 'action' => 'index'), null , true); ?>"><img src="<?php echo $this->baseUrl('/images/logo.png')?>" alt="IWantSpeak"/></h1>
+
+		<!-- ### Top Menu ### -->
+
+		<div id="topmenu">
+		<ul>
+			<?php if ( !empty($this -> user) && $this -> user -> isAuthenticated() ): ?>
+			<li><a href="<?php echo $this -> url(array('controller' => 'words', 'action' => 'index'), null, true)?>">Словарь</a></li>
+			<li><a href="<?php echo $this -> url(array('controller' => 'training', 'action' => 'index'), null, true)?>">Тренировка</a></li>	
+			<!--<li><a href="<?php echo $this -> url(array('controller' => 'user', 'action' => 'index'), null, true)?>">Мои данные</a></li>	-->
+			<?php else: ?>
+			<li><a href="<?php echo $this -> url(array('controller' => 'index', 'action' => 'index'), null, true)?>">О проекте</a></li>
+			<!--<li><a href="<?php echo $this -> url(array('controller' => 'user', 'action' => 'login'), null, true)?>">Вход</a></li>
+			<li><a href="<?php echo $this -> url(array('controller' => 'user', 'action' => 'registration'), null, true)?>">Регистрация</a></li>-->
+			<?php endif;?>
+		</ul>	
+		</div>
+
+	</div>
+	
+	<!-- ### Content ### -->
+	
+	<div id="contentcontainer">
+		
+<div id="content">
+<?php if ( !empty($this->flash_messages) && is_array($this->flash_messages) ): ?>
+<div class="flash-messages-box">
+<table>
+<tr>
+<td><img src="<?php echo $this->baseUrl('images/exclamation.png') ?>" /></td>
+<td style="padding-left:10px;">
+<?php foreach ( $this->flash_messages as $message ): ?>
+<p><?php echo $message; ?></p>
+<?php endforeach; ?>
+</td>
+</tr>
+</table>
+</div>
+<?php endif; ?>
+<?php if  ( !empty($this -> user) && empty($this->user->name) && $this -> user -> isAuthenticated() ): ?>
+<p class="temporary-warning">Внимание, вам необходимо <a href="<?php echo $this -> url(array('controller' => 'user', 'action' => 'registration'), null, true)?>">зарегистрироваться</a>, чтобы данные сохранились.</p>
+<?php endif; ?>
+<?= $this->layout()->content; ?>
+		
+		<!-- ### Post Entry End ###  -->
+
+<!-- 
+		<div class="postpagesnav">
+		<div class="older"><a href="#">&laquo; Older entries</a></div>
+		<div class="newer"><a href="#">Newer entries &raquo;</a></div>
+		</div>
+ -->	
+		</div>
+
+		<!-- ### Sidebar Begin ### -->
+		
+		<div id="sidebar">
+			
+		<ul>
+		<?php if ( empty($this -> user) || !$this -> user -> isAuthenticated() ): ?>
+		<li>
+			<div class="login-box">
+			<form action="<?php echo $this->url(array('controller' => 'user', 'action' => 'login'), null, true)?>" method="post">
+			<h4>Авторизация</h4>
+			Емайл:<br/> <input type="text" name="email" value=""/><br/>
+			Пароль:<br/> <input type="password" name="password" value=""/><br/>
+			<p style="text-align:right;padding:0;margin:3px 0"><input type="submit" value="Вход" /></p>
+			<p style="padding:0;margin:3px 0;font-size:13px;"><strong><a href="<?php echo $this->url(array('controller' => 'user', 'action' => 'temp'), null, true)?>">Попробовать без регистрации</a></strong></p>
+			<p style="padding:0;margin:3px 0"><a href="<?php echo $this->url(array('controller' => 'user', 'action' => 'registration'), null, true)?>">Зарегистрироваться</a></p>
+			</form>
+			</div>
+		</li>
+		<?php endif; ?>
+
+		<?php echo $this->action('statistic', 'user'); ?>
+		
+		<?php echo $this->action('block', 'translate'); ?>
+
+		</ul>	
+		
+		</div>
+
+		<!-- ### Sidebar End ### -->
+
+	</div>
+</div>	
+
+<div id="footer">
+<p>Если вы нашли ошибку или вы хотите сделать нам какое то предложение воспользуйтесь <a href="<?php echo $this->url(array('controller' => 'index', 'action' => 'message'), null, true); ?>">формой обратной связи</a></p>
+	<p>&copy; <?= ( date('Y') > 2011 ) ? '2011-' . date('Y') : date('Y');?> iwantspeak.net</p>
+</div>
+</body>
+</html>

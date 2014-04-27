@@ -1,0 +1,10 @@
+<?php if ( !empty($this->statistic) ): ?>
+<li>
+<div class="statistic-box">
+<h2>Ваша статистика</h2>
+<p>В словарях всего <strong><?php echo $this->statistic['all']; ?></strong> слов</p>
+<p>Вы выучили <strong><?php echo $this->statistic['full']; ?></strong> слов</p>
+<p>На изучении <strong><?php echo ($this->statistic['all'] - $this->statistic['full']); ?></strong> слов</p>
+</div>
+</li>
+<?php endif; ?>

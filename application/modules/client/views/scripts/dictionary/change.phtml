@@ -1,0 +1,21 @@
+<?php if ( !isset($this -> dictionaries) ): ?>
+
+<p>Для того что бы начать изучение слов, вам нужно создать свой словарь и заполнить его словами</p>
+<p><a href="<?php echo $this -> url(array('controller' => 'dictionary', 'action' => 'create'), null, true);?>">Создать свой первый словарь</a></p>
+
+<?php else: ?>
+<h3>Выбирете словарь с которым вы будете работать</h3>
+<p><a href="<?php echo $this -> url(array('controller' => 'dictionary', 'action' => 'create'), null, true);?>">Добавить новый словарь</a></p>
+<?php foreach ( $this -> dictionaries as $dictionary ): ?>
+<p><a href="<?php echo $this -> url(array('controller' => 'dictionary', 'action' => 'change', 'id' => $dictionary['id']), null, true);?>"><?php echo $dictionary['ftitle']?> - <?php echo $dictionary['ttitle']?></a></p>
+<?php endforeach;?>
+<?php endif;?>
+<!-- 
+<script type="text/javascript">
+$(document).ready(function(){
+	$.getJSON('<?=$this -> url(array('controller' => 'translate', 'action' => 'translate'), null, true)?>/source/en/target/ru/text/have', function(data) {
+		alert(data);
+	});
+});
+</script>
+-->

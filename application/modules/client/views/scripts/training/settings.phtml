@@ -1,0 +1,48 @@
+<p><a class="open-training-settings">Показать настройки</a></p>
+<p><a class="close-training-settings">Скрыть настройки</a></p>
+<div class="training-settings-box">
+<form action="" method="post">
+<h3>Настройки тренировки</h3>
+<table class="training-settings">
+<tr>
+<td>
+<p><strong>Слова для тестирования</strong></p>
+<p><input type="checkbox" name="words[]" value="1"<?php echo in_array(1, $this->training_words_type) ? ' checked="checked"' : ''?>/> <label>Слова на 1-ом уровне обучения</label></p>
+<p><input type="checkbox" name="words[]" value="2"<?php echo in_array(2, $this->training_words_type) ? ' checked="checked"' : ''?>/> <label>Слова на 2-ом уровне обучения</label></p>
+<p><input type="checkbox" name="words[]" value="3"<?php echo in_array(3, $this->training_words_type) ? ' checked="checked"' : ''?>/> <label>Слова на 3-ом уровне обучения</label></p>
+<p><input type="checkbox" name="words[]" value="full"<?php echo in_array('full', $this->training_words_type) ? ' checked="checked"' : ''?>/> <label>Выученные слова</label></p>
+<p><input type="checkbox" name="words[]" value="selected"<?php echo in_array('selected', $this->training_words_type) ? ' checked="checked"' : ''?>/> <label>Выделенные слова</label></p>
+</td>
+<td>
+<p><strong>Метод тестирования</strong></p>
+<p><input type="radio" name="method" value="1"<?php echo $this->training_method == '1' ? ' checked="checked"' : ''?>/> <label>1-й уровень</label></p>
+<p><input type="radio" name="method" value="2"<?php echo $this->training_method == '2' ? ' checked="checked"' : ''?>/> <label>2-й уровень</label></p>
+<p><input type="radio" name="method" value="3"<?php echo $this->training_method == '3' ? ' checked="checked"' : ''?>/> <label>3-й уровень</label></p>
+<p><input type="radio" name="method" value="all"<?php echo $this->training_method == 'all' ? ' checked="checked"' : ''?>/> <label>Все уровни</label></p>
+</td>
+</tr>
+</table>
+<input type="submit" value="Применить" />
+</form>
+</div>
+
+<?$this -> headScript() -> captureStart();?>
+
+$(document).ready(function(){
+
+	$('.open-training-settings').click(function(){
+		$('.training-settings-box').show();
+		$(this).hide();
+		$('.close-training-settings').show();
+		
+	});
+	
+	$('.close-training-settings').click(function(){
+		$('.training-settings-box').hide();
+		$(this).hide();
+		$('.open-training-settings').show();
+		
+	});
+	
+});
+<?$this -> headScript() -> captureEnd();?>

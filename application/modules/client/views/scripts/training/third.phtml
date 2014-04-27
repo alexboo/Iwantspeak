@@ -1,0 +1,132 @@
+<?php echo $this->action('settings', 'training'); ?>
+<?php if ( !empty($this->translate) || !empty($this->speech) ): ?>
+<div class="training-first">
+<?php if ( !empty($this->translate) ): ?>
+<h3 style="font-size: 20px;">
+Как переводится <span style="color:#8E3835">"<?php echo $this->translate['translate'];?>"</span>?
+</h3>
+<?php endif; ?>
+<?php if ( !empty($this->speech) ): ?>
+<h3 style="font-size: 20px;margin-bottom:0px;">
+Прослушайте и укажите слово<!--<a class="play" href="<?php echo $this->speech['url'];?>">Прослушать слово</a>-->
+</h3>
+<p style="margin-top:0px;">
+<object id="player" type="application/x-shockwave-flash" data="/swf/ump3player_500x70.swf" height="45" width="300"><param name="FlashVars" value="way=<?php echo $this->speech['url'];?>&amp;swf=/swf/ump3player_500x70.swf&amp;w=1&amp;h=1&amp;time_seconds=164&amp;autoplay=1&amp;q=&amp;skin=grey&amp;volume=70&amp;comment=" /></object>
+</p>
+<?php endif; ?>
+</div>
+<div class="training-false-block"></div>
+<div class="third-div">
+<form id="third-answer-form" action="" method="get">
+<p>
+<?php foreach ( $this->characters as $character ): ?>
+<input class="third-character" size="1" maxlength="1" type="text" name="character" value="<?php echo !$character['hide'] ? $character['char'] : '' ?>" <?php echo !$character['hide'] ? 'disabled="disabled"' : '' ?>/>
+<?php endforeach; ?>
+</p>
+<!--<p><input type="text" name="answer" value="" /></p>-->
+<input type="hidden" name="word" value="<?php echo $this->word ?>" />
+<input type="submit" style="display:none" class="third-answer" value="Ответить">
+</form>
+</div>
+<a class="continue" href="<?php echo $this->url(array('controller' => 'training', 'action' => 'second', 'next' => 1), null, true)?>">Пропустить</a>
+<?php endif; ?>
+
+<?$this -> headScript() -> captureStart();?>
+
+toNext = function(element) {
+    element = element.next();
+
+    while ( element.attr('disabled') ) {
+	element = element.next();
+    }
+
+    element.focus();
+}
+
+toPrev = function(element) {
+    element = element.prev();
+
+    while ( element.attr('disabled') ) {
+	element = element.prev();
+    }
+
+    element.focus();
+}
+
+$(document).ready(function(){
+
+    var attempt = 0;
+
+    var characters = new Array();
+    <?php foreach ( $this->characters as $i => $character ):  ?>
+    characters[<?php echo $i ?>] = '<?php echo addslashes($character['char']) ?>';
+    <?php endforeach; ?>
+
+    $('input[name=character]').keypress(function(event){
+
+	if ( event.keyCode == 9 ) {
+	    $('.third-answer').focus();
+	}
+	else if ( event.keyCode == 37 ) {
+	    toPrev($(this));
+	}
+	else if ( event.keyCode == 39 ) {
+	    toNext($(this));
+	}
+	else if ( event.which != 8 && event.which != 0 ) {
+	    toNext($(this));
+	}
+	else {
+	    if ( $(this).val() == '' )
+		toPrev($(this));
+	}
+    });
+
+    $('#third-answer-form').submit(function(){
+    
+	$('.continue').hide();
+
+	var word = '';
+
+	$('input[name=character]').each(function(index){
+	    if ( characters[index] != $(this).val() )
+		$(this).addClass('error');
+	    else
+		$(this).removeClass('error');
+		
+	    word += $(this).val();
+
+	});
+	
+	if ( word == $('#third-answer-form input[name=word]').val() ) {
+	    $(this).removeClass('false-answer');
+	    $(this).addClass('true-answer');
+	    attempt = 3;
+	}
+	else {
+	    $(this).addClass('false-answer');
+	    attempt ++;
+	}
+
+	if ( attempt == 3 ) {
+	
+	    $('.third-answer').hide();
+
+	    if ( $(this).hasClass('false-answer') ) {
+		$('.training-false-block').html('<p>Правильный перевод <span style="color:#8E3835">"' + $('#third-answer-form input[name=word]').val() + '"</span></p>');
+		$('.training-false-block').show(300);
+	    }
+	    
+	    $.getJSON("<?php echo $this->url(array('controller' => 'training', 'action' => 'third'), null, true)?>/answer/" + word, function(data) {
+		window.location.reload();
+	    });
+	}
+
+	return false;
+
+    });
+
+    $('input[name=character]:not(:disabled)').first().focus();
+});
+
+<?$this -> headScript() -> captureEnd();?>

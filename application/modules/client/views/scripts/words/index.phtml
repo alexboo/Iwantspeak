@@ -1,0 +1,133 @@
+<?php if ( isset($this -> dictionary) ): ?>
+<p><a href="<?php echo $this -> url(array('controller' => 'words', 'action' => 'add', 'dictionary' => $this -> dictionary['id']), null, true);?>">Добавить новое слово</a></p>
+<h3>Словарь: <?php echo $this -> dictionary['ftitle']?> - <?php echo $this -> dictionary['ttitle']?></h3>
+<p>Слов в словаре: <?php echo $this->words_count; ?></p>
+<?php endif; ?>
+
+<?php if ( isset($this->words) ): ?>
+<span class="words-filter">Фильтр</span>
+<form action="<?=$this -> url(array('controller' => 'words'), null, true)?>" method="get" class="filter" <?php echo (( !empty($this->level) || !empty($this->word)) ? '' : 'style="display:none;"' )?>>
+Фильтр: слово <input type="text" name="word" value="<?php echo !empty($this->word) ? $this->escape($this->word) : '';?>" /> слова <select name="level">
+<option value="all"<?php echo $this->level == 'all' ? ' selected="selected"' : ''?>>Не важно</option>
+<option value="1"<?php echo $this->level == 1 ? ' selected="selected"' : ''?>>на 1-ом уровне</option>
+<option value="2"<?php echo $this->level == 2 ? ' selected="selected"' : ''?>>на 2-ом уровне</option>
+<option value="3"<?php echo $this->level == 3 ? ' selected="selected"' : ''?>>на 3-ем уровне</option>
+<option value="full"<?php echo $this->level == 'full' ? ' selected="selected"' : ''?>>выученные слова</option>
+<option value="selected"<?php echo $this->level == 'selected' ? ' selected="selected"' : ''?>>выделенные слова</option>
+</select>
+<input type="submit" value="Искать" />
+</form>
+<p style="padding-left:10px;">
+Сортировать по: <select name="order">
+<option value="word.up"<?php echo $this->order == 'word.up' ? ' selected="selected"' : ''?>>Слову (А-Я)</option>
+<option value="word.down"<?php echo $this->order == 'word.down' ? ' selected="selected"' : ''?>>Слову (Я-А)</option>
+<option value="balls.up"<?php echo $this->order == 'balls.up' ? ' selected="selected"' : ''?>>Уровню обучения (возрастанию)</option>
+<option value="balls.down"<?php echo $this->order == 'balls.down' ? ' selected="selected"' : ''?>>Уровню обучения (убыванию)</option>
+<option value="date.up"<?php echo $this->order == 'date.up' ? ' selected="selected"' : ''?>>Дате добавления (возратанию)</option>
+<option value="date.down"<?php echo $this->order == 'date.down' ? ' selected="selected"' : ''?>>Дате добавления (убыванию)</option>
+</select>
+</p>
+<?php foreach ( $this->words as $word ): ?>
+<div class="word-box" style="">
+<input type="checkbox" class="select-word" name="select" value="<?php echo $word['id']?>"<?php echo $word['selected'] == 'yes' ? 'checked="checked"' : ''; ?>> <a class="view-word" href="<?php echo $this->url(array('controller' => 'words', 'action' => 'word', 'word' => $word['id']), null, true)?>"><?php echo $this->escape($word['word']); ?></a>
+<a href="<?php echo $this->url(array('controller' => 'words', 'action' => 'delete', 'id' => $word['id'], 'type' => 'word'), null, true)?>" class="delete-link" title="Удалить слово"><img src="<?php echo $this->baseUrl('images/delete-key.png');?>" alt="Удалить слово"/></a> 
+<?php echo $this->getLevelIcon($word['balls']); ?>
+</div>
+<?php endforeach; ?>
+<div style="clear:both;padding-left:10px;"><?php echo $this -> paginator; ?></div>
+<div style="display:none;min-width:100px;min-height:100px;" class="word-preview">
+<p style="text-align:right;margin:0;padding:0;margin-bottom:-10px;margin-top:-5px;"><img class="word-preview-close" style="width:25px;cursor:pointer" src="<?php echo $this->baseUrl('images/close.png')?>"></p>
+<div class="word-preview-content">
+</div>
+</div>
+<?$this -> headScript() -> captureStart();?>
+
+$(document).ready(function(){
+
+	$('.view-word').click(function(){
+		$('.word-preview-content').html($('<img/>').css('margin-top', '20px').css('margin-left', '35px').css('position', 'relative').attr('id', 'preloader').attr('src', '<?=$this -> baseUrl('images/ajax-loader.gif')?>'));
+		$('.word-preview').show();
+		toCenter($('.word-preview'));
+		$.getJSON($(this).attr('href'), function(data) {
+			$('.word-preview-content').html(data);
+			toCenter($('.word-preview'));
+		});
+		return false;
+	});
+	
+	$(".word-preview-content").delegate(".delete-link", "click", function(){
+		current = $(this);
+		$.getJSON($(this).attr('href'), function(data) {
+			if (data.error) {
+				alert(data.error);
+			}
+			else {
+				current.parent().parent().remove();
+			}
+		});
+		return false;
+    });
+
+	
+	function toCenter(div)
+	{
+		var top = window.pageYOffset;
+
+		panel = window.outerHeight - window.innerHeight;
+
+		height = div.height();
+
+		width = div.width();
+
+		if ( top + height > $(document).height() ) {
+			top -= (imgtop + height) - $(document).height();
+		}
+
+		half = ((screen.height / 2) - (height / 2)) - panel;
+
+		div.css('top', top + half + 40);
+		div.css('left', (screen.width - width) / 2);
+	}
+	
+	$('.word-preview-close').click(function(){
+	
+		$('.word-preview').hide(300);
+		
+	});
+
+	$('.words-filter').click(function(){
+		if ( $('form.filter').css('display') == 'block' )
+			$('form.filter').hide();
+		else
+			$('form.filter').show();
+	});
+
+	$('select[name=order]').change(function(){
+		window.location.href = "<?=$this -> url(array('controller' => 'words'), null, true)?>/index/<?php echo !empty($this->level) ? 'level/' . $this->level . '/' : ''?><?php echo !empty($this->word) ? 'word/' . $this->word . '/' : ''?>order/" + $(this).val();
+	});
+
+	$('.select-word').click(function(){
+		
+		current = $(this);
+		
+		current.attr('disabled', 'disabled');
+		
+		$.getJSON('<?=$this -> url(array('controller' => 'words', 'action' => 'select'), null, true)?>/id/' + $(this).val(), function(data) {
+		
+			if ( !data ) {
+				if ( current.attr('checked') ) {
+					current.removeAttr('cheched');
+				}
+				else {
+					current.attr('checked', 'checked');
+				}
+			}
+			
+			current.removeAttr('disabled');
+		
+		});
+		
+	});	
+});
+<?$this -> headScript() -> captureEnd();?>
+<?php endif;?>

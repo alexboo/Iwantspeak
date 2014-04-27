@@ -1,0 +1,103 @@
+<form action="" method="post">
+<table>
+<tr>
+<td style="vertical-align:top">
+<p>
+Слово:<br/>
+<input style="width:250px;" type="text" id="word" name="word" value="<?php echo (isset($this->word) ? $this->escape($this->word['word']) : '' )?>" />
+</p>
+Перевод:<br/>
+<?php if ( !empty($this->errors['translates'][0]) ): ?>
+<p class="error">Выберите или напишити переводы данного слова</p>
+<?php endif; ?>
+<textarea style="width:250px;height:200px;" id="translates" name="translates">
+<?php if ( !empty($this->translates) ): ?>
+<?php foreach ( $this->translates as $translate ): ?>
+<?php echo $this->escape($translate['translate']) . "\n"; ?>
+<?php endforeach; ?>
+<?php endif; ?>
+</textarea><br/>
+<p><input type="submit" name="save" value="Сохранить"/><br/><br/><input type="submit" name="saveandending" value="Сохранить и закончить добавление"/></p>
+</td>
+<td style="padding:10px;" id="contentBox">
+<div id="speechBox"></div>
+<div id="transcriptionBox"></div>
+<div id="translatesBox"></div>
+</td>
+</tr>
+</table>
+</form>
+<?$this -> headScript() -> captureStart();?>
+
+$(document).ready(function(){
+
+	getTranslate = function(){
+		if ( $('#word').val() != '' && text != $('#word').val() ) {
+			$('#preloader').remove();
+			text = $('#word').val();
+			$('#translatesBox').html('');
+			$('#transcriptionBox').html('');
+			$('#speechBox').html('');
+			$('#contentBox').append($('<img/>').css('position', 'relative').css('margin-left', '140px').attr('id', 'preloader').attr('src', '<?=$this -> baseUrl('images/ajax-loader.gif')?>'));
+			$.getJSON('<?=$this -> url(array('controller' => 'translate', 'action' => 'translate', 'source' => $this -> dictionary['fkey'], 'target' => $this -> dictionary['tkey']), null, true)?>/text/' + $('#word').val(), function(data) {
+				$('#preloader').remove();
+				if ( data ) {
+					if (data['translates']) {
+						$('#translatesBox').html('');
+						$('#translatesBox').append($('<h3/>').text('Доступные переводы'));
+						for(i in data['translates']){
+							$('#translatesBox').append($('<p/>').addClass('translate_text').text(data['translates'][i]));
+						}
+					}
+					
+					if (data['transcription']) {
+						$('#transcriptionBox').html($('<h3/>').text('Транскрипция слова'));
+						if ( data['transcription']['url'] ) {
+							$('#transcriptionBox').append($('<img/>').attr('src',data['transcription']));
+						}
+						else {
+							$('#transcriptionBox').append($('<p/>').html(data['transcription']));
+						}
+					}
+	
+					if (data['speech']) {
+						$('#speechBox').html($('<h3/>').text('Произношение слова'));
+						$('#speechBox').append($('<a/>').addClass('play').text('Прослушать').attr('href', data['speech']));
+					}
+				}
+			});
+		}
+	}
+
+	var text = '';
+	
+	$('#word').focusout(function(){
+		getTranslate();
+	});
+	
+	if ( $('#word').val() ) {
+		getTranslate();
+	}
+	
+	$('.translate_text').live('click', function(){
+	
+		var text = $(this).text();
+		
+		var value = $('#translates').val();
+
+		value = value.replace("\n\n", '');
+		
+		if ( $(this).hasClass('select') ) {
+			$(this).removeClass('select');
+			value = value.replace(text + "\n", '');
+		}
+		else {
+			$(this).addClass('select');
+
+			value += (text + "\n");
+		}
+		
+		$('#translates').val(value);
+	});
+});
+<?$this -> headScript() -> captureEnd();?>

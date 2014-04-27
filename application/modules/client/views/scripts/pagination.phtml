@@ -1,0 +1,25 @@
+<? if ($this -> pageCount): ?>
+	<? if (isset($this -> previous)): ?>
+	  <a href="<?=$this -> url(array('page' => $this -> previous));?>">
+	    &lt;&nbsp;
+	  </a>
+	<? else: ?>
+	  &lt;&nbsp;
+	<? endif; ?>
+
+	<? foreach ($this -> pagesInRange as $page): ?>
+	  <? if ($page != $this -> current): ?>
+	    <a href="<?=$this -> url(array('page' => $page));?>"><?=$page;?></a>&nbsp;
+	  <? else: ?>
+	    <? echo $page; ?>
+	  <? endif; ?>
+	<? endforeach; ?>
+
+	<? if (isset($this -> next)): ?>
+	  <a href="<?=$this -> url(array('page' => $this -> next));?>">
+	    &nbsp;&gt;
+	  </a>
+	<? else: ?>
+	  &nbsp;&gt;
+	<? endif; ?>
+<? endif; ?>

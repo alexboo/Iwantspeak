@@ -1,0 +1,117 @@
+<?php
+// Define path to application directory
+defined('APPLICATION_PATH')
+    || define('APPLICATION_PATH', realpath(dirname(__FILE__) . '/../application'));
+
+// Define application environment
+defined('APPLICATION_ENV')
+    || define('APPLICATION_ENV', (getenv('APPLICATION_ENV') ? getenv('APPLICATION_ENV') : 'development'));
+
+// Ensure library/ is on include_path
+set_include_path(implode(PATH_SEPARATOR, array(
+    realpath(APPLICATION_PATH . '/../library'),
+    get_include_path(),
+)));
+
+define('LOGS_PATH', realpath(dirname(__FILE__) . '/../logs'));
+
+/** Zend_Application */
+require_once 'Zend/Application.php';
+
+// Create application, bootstrap, and run
+$application = new Zend_Application(
+    APPLICATION_ENV,
+    APPLICATION_PATH . '/configs/application.ini'
+);
+
+$options = new Zend_Console_Getopt(
+  array(
+    'help|h' => 'Print help',
+  	'debug|d' => 'Debug output'
+  )
+);
+
+$options -> setOptions(
+	array('ignoreCase' => true,)
+);
+
+try {
+	$options -> parse();
+
+	if ($options -> getOption('h')) {
+		die($options -> getUsageMessage());
+	}
+
+	$debug = !! $options -> getOption('d');
+} catch (Zend_Console_Getopt_Exception $e) {
+    die($options -> getUsageMessage());
+}
+
+$application -> bootstrap(array('autoload', 'db'));
+
+set_time_limit(0);
+
+$translates = array(
+	array('en' => array('ru', 6)),
+	array('en' => array('kk', 7)),
+	array('ru' => array('en', 8)),
+	array('ru' => array('kk', 9)),
+	array('kk' => array('ru', 10)),
+	array('kk' => array('en', 11)),
+);
+
+// Run
+$frequencyTable = new Zend_Db_Table('frequency_list');
+
+$wordsTable = new Model_Words();
+
+$translateModel = new Model_Translate();
+			
+$transcriptionModel = new Model_Transcription();
+			
+$speechModel = new Model_Speech();
+
+foreach ( $translates as $array ) {
+	
+	foreach ( $array as $from => $to ) {
+		
+		$words = $frequencyTable -> fetchAll(array('language = ?' => $from));
+		
+		foreach ( $words as $word ) {
+			
+			$_translates = $translateModel -> translate($from, $to[0], $word['word']);
+					
+			$_t = $transcriptionModel -> transcription($from, $to[0], $word['word']);
+					
+			$_s = $speechModel -> speech($from, $to[0], $word['word']);
+			
+			$_word = $wordsTable->get($word['word'], $from);
+			
+			$_translates = $frequencyTable -> fetchAll(array('language = ?' => $to[0], 'word IN(?)' => $_translates)) -> toArray();
+			
+			if ( !empty($_translates) ) {
+				
+				foreach ( $_translates as $translate ) {
+					
+					$_trans = $wordsTable->getTranslate($translate['word'], $_word['id'], $to[0]);
+					
+					$trans[] = $_trans['id'];
+					
+				}
+				
+				if ( !empty($trans) ) {
+					
+					$wordsTable -> addWordForUser($to[1], $_word['id'], 13, $trans);
+						
+					echo "Added new word '{$word['word']}'\n";
+				}
+				else {
+					echo "Error! words isn't frequency\n";
+				}
+				
+				sleep(1);
+				
+			}
+		}
+	}
+}

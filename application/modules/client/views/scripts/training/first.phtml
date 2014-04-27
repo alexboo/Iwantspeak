@@ -1,0 +1,76 @@
+<?php echo $this->action('settings', 'training'); ?>
+<?php if ( !empty($this->word['id']) ): ?>
+<div class="training-first">
+<h3 style="font-size: 20px;margin-bottom: 0">Как переводится <span style="color:#8E3835">"<?php echo $this->word['word']; ?>"</span>?</h3>
+<?php if ( !empty($this->transcription) ): ?>
+<p style="padding-left:20px;color:#888">
+<?php if ( isset($this->transcription['url']) ): ?>
+Транскрипция: <img src="<?php echo $this->transcription['url'];?>" />
+<?php else: ?>
+Транскрипция: <?php echo $this->transcription['text'];?>
+<?php endif;?>
+</p>
+<?php endif; ?>
+<?php if ( !empty($this->speech) ): ?>
+<p style="padding-left:20px;margin-bottom:0px;color:#888">
+Произношение слова: <!--<a class="play" href="<?php echo $this->speech['url'];?>">Прослушать</a>-->
+</p>
+<p style="padding-left:20px;margin-top:0px;">
+<object id="player" type="application/x-shockwave-flash" data="/swf/ump3player_500x70.swf" height="45" width="300"><param name="FlashVars" value="way=<?php echo $this->speech['url'];?>&amp;swf=/swf/ump3player_500x70.swf&amp;w=1&amp;h=1&amp;time_seconds=164&amp;autoplay=1&amp;q=&amp;skin=grey&amp;volume=70&amp;comment=" /></object>
+</p>
+<?php endif; ?>
+</div>
+<div class="training-false-block"></div>
+<?php if ( !empty($this->translates) ): ?>
+<div class="third-div">
+<?php foreach ( $this->translates as $translate ): ?>
+<p class="answer"><input type="hidden" name="word_id" value="<?php echo $translate['word_id'] ?>"><input type="hidden" name="word" value="<?php echo $translate['word'] ?>"><a class="first-answer<?php echo $translate['true'] == 'true' ? ' true' : ''?>" href="<?php echo $this->url(array('controller' => 'training', 'action' => 'first', 'answer' => $translate['id']), null, true)?>"><?php echo $translate['translate']; ?></a></p>
+<?php endforeach; ?>
+<?php endif; ?>
+</div>
+<a class="continue" href="<?php echo $this->url(array('controller' => 'training', 'action' => 'first', 'next' => 1), null, true)?>">Пропустить</a>
+<?php endif; ?>
+
+<?$this -> headScript() -> captureStart();?>
+
+$(document).ready(function(){
+
+	$('.answer a').mouseover(function(){
+
+	    $(this).Animator().addAnimation({'padding-top': '20px', 'padding-bottom': '20px', 'font-size': '25px', 'border-color': '#000000'}, 300);
+	});
+
+	$('.answer a').mouseout(function(){
+
+	    $(this).Animator().addAnimation({'padding-top': '10px', 'padding-bottom': '10px', 'font-size': '16px', 'border-color': '#cccccc'}, 100);
+	});
+	
+	$('.first-answer').click(function(){
+
+	    $('.continue').hide();
+	    
+	    if ( $(this).hasClass('true') ) {
+		$(this).parent().addClass('true-answer');
+	    }
+	    else {
+		$(this).parent().addClass('false-answer');
+		var id = $(this).parent().find('input[name=word_id]').val();
+		var word = $(this).parent().find('input[name=word]').val();
+		$('.training-false-block').append('<p>Правильный перевод "' + $(this).text() + '" - "<a href="<?php echo $this->url(array('controller' => 'words', 'action' => 'word'), null, true)?>/word/' + id + '">' + word + '</a>"</p>');
+		$('.training-false-block').show();
+	    }
+
+	    $.getJSON($(this).attr('href'), function(data) {
+		if ( data ) {
+		    window.location.href=data;
+		}
+		else
+		    window.location.reload();
+	    });
+
+	    return false;
+		
+	});
+});
+
+<?$this -> headScript() -> captureEnd();?>

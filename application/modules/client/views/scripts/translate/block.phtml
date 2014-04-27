@@ -1,0 +1,85 @@
+<li><h2>Перевод слова</h2>
+<div class="translates-block">
+<table>
+<tr>
+	<td>
+	Перевести с</td>
+	<td>
+	<select name="source">
+	<?php foreach ( $this->languages as $language ): ?>
+	<option value="<?php echo $language['key']; ?>"><?php echo $language['title']; ?></option>
+	<?php endforeach; ?>
+	</select>
+	</td>
+</tr>
+<tr>
+	<td>На</td>
+	<td><select name="target">
+	<?php foreach ( $this->languages as $language ): ?>
+	<option value="<?php echo $language['key']; ?>"><?php echo $language['title']; ?></option>
+	<?php endforeach; ?>
+	</select>
+	</td>
+</tr>
+</table>
+<input type="text" name="word" value="" /><br/><br/>
+<input type="submit" class="translate-block-submit" value="Перевести" />
+<div id="translates-block-content">
+<div id="translates-block-speech"></div>
+<div id="translates-block-transcription"></div>
+<div id="translates-block-words"></div>
+</div>
+</div>
+</li>
+<script type="text/javascript">
+<!--
+
+$(document).ready(function(){
+
+	getBlockTranslate = function(){
+		if ( $('.translates-block input[name=word]').val() != '' ) {
+			$('#preloader').remove();
+			$('#translates-block-words').html('');
+			$('#translates-block-transcription').html('');
+			$('#translates-block-speech').html('');
+			$('#translates-block-content').append($('<img/>').css('position', 'relative').css('margin-left', '140px').attr('id', 'preloader').attr('src', '<?=$this -> baseUrl('images/ajax-loader.gif')?>'));
+			$.getJSON('<?=$this -> url(array('controller' => 'translate', 'action' => 'translate'), null, true)?>/source/' + $('select[name=source]').val() + '/target/' + $('select[name=target]').val() + '/text/' + $('.translates-block input[name=word]').val(), function(data) {
+				$('#preloader').remove();
+				if ( data ) {
+					if (data['translates']) {
+						$('#translates-block-words').html('');
+						$('#translates-block-words').append($('<h4/>').text('Доступные переводы'));
+						for(i in data['translates']){
+							$('#translates-block-words').append($('<p/>').text(data['translates'][i]));
+						}
+					}
+					
+					if (data['transcription']) {
+						$('#translates-block-transcription').html($('<h4/>').text('Транскрипция слова'));
+						if ( data['transcription']['url'] ) {
+							$('#translates-block-transcription').append($('<img/>').attr('src',data['transcription']));
+						}
+						else {
+							$('#translates-block-transcription').append($('<p/>').html(data['transcription']));
+						}
+					}
+	
+					if (data['speech']) {
+						$('#translates-block-speech').html($('<h4/>').text('Произношение слова'));
+						$('#translates-block-speech').append($('<a/>').addClass('play').text('Прослушать').attr('href', data['speech']));
+					}
+				}
+			});
+		}
+	}
+	
+	$('.translate-block-submit').click(function(){
+	
+		getBlockTranslate();
+		
+		return false;
+	});
+});
+
+//-->
+</script>
