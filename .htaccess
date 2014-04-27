@@ -1,0 +1,7 @@
+SetEnv APP_ENV development
+
+RewriteEngine On
+
+# Rewrite rules for Zend Framework
+RewriteRule ^(.*)$ /public/$1 [QSA,L]
+
